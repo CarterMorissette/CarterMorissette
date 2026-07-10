@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carter Morissette — Statistical Data Science</title>
+<meta name="description" content="Carter Morissette — statistical modeling, forecasting, and quantitative analysis. University of Connecticut.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12161c;
+  --paper:#faf9f7;
+  --rule:#d9d5cd;
+  --mute:#6d7480;
+  --plot:#1b3a5c;
+  --resid:#a8442e;
+  --band:#e8e4dc;
+  --maxw:940px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:16px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--plot);outline-offset:3px}
+
+/* ---------- header ---------- */
+header{padding:28px 0 0}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--mute)}
+.topbar nav{display:flex;gap:22px}
+.topbar nav a{text-decoration:none}
+.topbar nav a:hover{color:var(--ink)}
+
+/* ---------- hero ---------- */
+.hero{padding:64px 0 40px}
+.hero h1{
+  font-family:'Newsreader',Georgia,serif;
+  font-weight:400;font-size:clamp(38px,6.4vw,68px);
+  line-height:1.04;letter-spacing:-.018em;max-width:15ch;
+}
+.hero h1 em{font-style:italic}
+.hero .sub{margin-top:26px;max-width:56ch;font-size:17.5px;color:#333a44}
+.meta{margin-top:34px;display:flex;flex-wrap:wrap;gap:0;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mute);
+  border-top:1px solid var(--rule);padding-top:14px}
+.meta span{padding-right:20px;margin-right:20px;border-right:1px solid var(--rule)}
+.meta span:last-child{border:0}
+.meta a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.meta a:hover{border-color:var(--ink)}
+
+/* ---------- signature: residual strip ---------- */
+.residual{margin:8px 0 0;padding:22px 0 26px;border-bottom:1px solid var(--rule)}
+.residual svg{width:100%;height:110px;display:block}
+.residual .cap{margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  color:var(--mute);letter-spacing:.04em}
+.dot{opacity:0;animation:pop .5s ease forwards}
+@keyframes pop{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dot{opacity:1;animation:none}}
+
+/* ---------- sections ---------- */
+section{padding:70px 0;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+.shead{display:flex;align-items:baseline;gap:16px;margin-bottom:38px}
+.shead h2{font-family:'Newsreader',serif;font-weight:400;font-size:29px;letter-spacing:-.01em}
+.shead .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.shead .line{flex:1;height:1px;background:var(--rule)}
+
+/* ---------- featured project ---------- */
+.feature{border:1px solid var(--rule);background:#fff;padding:32px 30px}
+.feature .kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--resid);margin-bottom:12px}
+.feature h3{font-family:'Newsreader',serif;font-weight:500;font-size:25px;letter-spacing:-.01em;line-height:1.25}
+.feature p{margin-top:14px;max-width:66ch;color:#333a44;font-size:15.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin:28px 0 24px}
+.stat{background:#fff;padding:16px 16px 14px}
+.stat .n{font-family:'IBM Plex Mono',monospace;font-size:23px;font-weight:500;letter-spacing:-.02em}
+.stat .l{margin-top:5px;font-size:11.5px;color:var(--mute);line-height:1.4}
+.findings{margin:22px 0 0;padding:0;list-style:none}
+.findings li{position:relative;padding-left:26px;margin-bottom:11px;font-size:15px;color:#333a44;max-width:70ch}
+.findings li::before{content:'';position:absolute;left:0;top:9px;width:12px;height:1px;background:var(--resid)}
+.actions{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:9px 17px;border:1px solid var(--ink);text-decoration:none;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.05em;transition:.15s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--rule);color:var(--mute)}
+.btn.ghost:hover{background:transparent;border-color:var(--ink);color:var(--ink)}
+
+/* ---------- project grid ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:26px}
+.card{border-top:2px solid var(--ink);padding-top:18px}
+.card h3{font-family:'Newsreader',serif;font-weight:500;font-size:20px;line-height:1.3}
+.card .lang{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute);
+  letter-spacing:.08em;margin-top:6px}
+.card p{margin-top:12px;font-size:14.8px;color:#333a44}
+
+/* ---------- experience ---------- */
+.job{display:grid;grid-template-columns:170px 1fr;gap:28px;padding:26px 0;border-top:1px solid var(--rule)}
+.job:first-of-type{border-top:0;padding-top:0}
+.when{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--mute);line-height:1.7;letter-spacing:.02em}
+.when .now{color:var(--resid)}
+.job h3{font-size:16.5px;font-weight:600;letter-spacing:-.005em}
+.job .org{font-size:14.5px;color:var(--mute);margin-top:2px}
+.job ul{margin:13px 0 0;padding-left:17px}
+.job li{font-size:14.8px;color:#333a44;margin-bottom:7px}
+
+/* ---------- skills / certs ---------- */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:52px}
+.subhead{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--mute);margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:5px 10px;
+  border:1px solid var(--rule);background:#fff;color:#333a44}
+.chip.core{border-color:var(--ink);color:var(--ink)}
+.certs{list-style:none;font-size:14.5px}
+.certs li{padding:9px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:16px}
+.certs li:last-child{border:0}
+.certs .issuer{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute);white-space:nowrap}
+.coursework{font-size:14.5px;color:#333a44;line-height:1.9}
+
+/* ---------- footer ---------- */
+footer{padding:56px 0 68px}
+footer .big{font-family:'Newsreader',serif;font-size:clamp(26px,4vw,40px);font-weight:400;letter-spacing:-.015em}
+footer .links{margin-top:24px;display:flex;gap:26px;flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace;font-size:13px}
+footer .links a{text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px}
+footer .links a:hover{border-color:var(--ink)}
+footer .fine{margin-top:44px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute)}
+
+/* ---------- interactive scatter ---------- */
+.viz{border:1px solid var(--rule);background:#fff;padding:26px 26px 20px;margin-top:26px}
+.viz-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.viz-note{font-size:13.5px;color:var(--mute);max-width:46ch}
+.legend{display:flex;gap:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute)}
+.legend span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sw{width:9px;height:9px;border-radius:50%;display:inline-block}
+.sw.fit{border:1.5px solid var(--plot)}
+.sw.out{background:var(--resid)}
+#scatter{width:100%;height:auto;display:block;overflow:visible}
+#scatter circle{cursor:pointer;transition:r .12s}
+.readout{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);min-height:46px}
+.readout .team{display:block;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
+.readout .detail{display:block;font-size:13px;color:var(--mute);margin-top:3px}
+
+/* ---------- annotated decision ---------- */
+.annot{border:1px solid var(--rule);background:#fff;padding:28px 26px;margin-top:26px}
+.annot .kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;margin-bottom:20px}
+.annot-body{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.annot-text p{font-size:15px;color:#333a44;margin-bottom:14px;max-width:52ch}
+.annot-text .aside{font-family:'Newsreader',serif;font-style:italic;font-size:17px;
+  color:var(--ink);border-left:2px solid var(--resid);padding-left:16px;margin-top:20px}
+.code{font-family:'IBM Plex Mono',monospace;font-size:12.2px;line-height:1.75;
+  background:#12161c;color:#c9d1d9;padding:20px 18px;overflow-x:auto;white-space:pre}
+.code .c{color:#6d7480}
+.code .s{color:#8fbc9b}
+.code .f{color:#7fa8d1}
+
+/* ---------- essay ---------- */
+.essay{max-width:64ch}
+.essay-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--mute);margin-bottom:14px}
+.essay h3{font-family:'Newsreader',serif;font-weight:400;font-size:clamp(26px,3.6vw,36px);
+  line-height:1.18;letter-spacing:-.015em;margin-bottom:26px}
+.essay p{font-family:'Newsreader',serif;font-size:18px;line-height:1.72;margin-bottom:19px;color:#252b33}
+.essay .lede{font-size:21px;line-height:1.62;color:var(--ink)}
+.essay-foot{margin-top:32px}
+
+/* ---------- contact ---------- */
+.contact{display:grid;grid-template-columns:140px 1fr;gap:36px;align-items:start}
+.portrait{width:140px;height:auto;display:block;border:1px solid var(--rule);
+  filter:grayscale(1);transition:filter .35s}
+.portrait:hover{filter:grayscale(0)}
+.contact-body p{font-size:16px;color:#333a44;margin-bottom:14px;max-width:60ch}
+.contact-links{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+.contact-links a{font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+  padding:9px 15px;border:1px solid var(--rule);text-decoration:none;transition:.15s}
+.contact-links a:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+
+@media(max-width:760px){
+  .grid,.cols{grid-template-columns:1fr;gap:30px}
+  .job{grid-template-columns:1fr;gap:10px}
+  .topbar nav{gap:16px}
+  .hero{padding:44px 0 30px}
+  section{padding:52px 0}
+  .feature{padding:24px 20px}
+  .annot-body{grid-template-columns:1fr;gap:24px}
+  .contact{grid-template-columns:1fr;gap:24px}
+  .portrait{width:120px}
+  .viz{padding:20px 16px 16px}
+  .essay p{font-size:17px}
+  .essay .lede{font-size:19px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="topbar">
+    <span>Carter Morissette</span>
+    <nav>
+      <a href="#work">Work</a>
+      <a href="#experience">Experience</a>
+      <a href="#toolkit">Toolkit</a>
+      <a href="#writing">Writing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Statistical modeling, <em>forecasting</em>, and quantitative analysis.</h1>
+  <p class="sub">I'm a Statistical Data Science major at the University of Connecticut, minoring in Economics. I work with data to answer questions people actually have — what's driving an industrial facility's energy spend, which box-score statistics move a team's win percentage, where a portfolio is carrying risk it isn't paid for. This page collects that work. I'm sitting for the SIE exam this August.</p>
+  <div class="meta">
+    <span>B.S. Expected May 2027</span>
+    <span>Putnam, Connecticut</span>
+    <span><a href="mailto:cartermorissette4@gmail.com">cartermorissette4@gmail.com</a></span>
+  </div>
+</div>
+
+<div class="residual">
+  <svg viewBox="0 0 900 110" preserveAspectRatio="none" role="img" aria-label="Residual plot from the NBA win percentage model: thirty team residuals scattered around zero.">
+    <line x1="0" y1="55" x2="900" y2="55" stroke="#d9d5cd" stroke-width="1" stroke-dasharray="4 5"/>
+    <g id="pts"></g>
+  </svg>
+  <div class="cap">Residuals vs. fitted Win% — 2024–25 salary-cap model · 30 teams · adj. R² = 95.45%</div>
+</div>
+
+<!-- ================= WORK ================= -->
+<section id="work">
+  <div class="shead">
+    <span class="tag">01 / Featured</span>
+    <div class="line"></div>
+    <h2>Selected work</h2>
+  </div>
+
+  <div class="feature">
+    <div class="kicker">Multiple Linear Regression · R</div>
+    <h3>Predicting NBA win percentage from box-score statistics and salary-cap efficiency</h3>
+    <p>A replication and extension of a 2015–16 regression paper, rebuilt in R and pushed forward a decade. The original authors validated on a single season with no out-of-sample test — a real overfitting risk with only thirty teams and an interaction term. I refit the model on 2024–25 data to see whether the relationships held up, then added share of salary cap used as a predictor to ask a question the original never did: does spending buy wins?</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">95.45%</div><div class="l">Adjusted R², 2024–25 salary-cap model</div></div>
+      <div class="stat"><div class="n">91.89%</div><div class="l">Predicted R² (PRESS)</div></div>
+      <div class="stat"><div class="n">288.5</div><div class="l">F-statistic on 3P% — dominant predictor</div></div>
+      <div class="stat"><div class="n">p = 0.384</div><div class="l">Salary cap %, once performance is controlled for</div></div>
+    </div>
+
+    <ul class="findings">
+      <li>Salary cap usage barely moves the needle once shooting, scoring, turnovers, and defense are in the model. Spending to the cap does not buy wins — converting that spend into production does.</li>
+      <li>Three-point percentage was the single dominant factor in both eras, ten seasons apart. The framework survived a decade of stylistic upheaval in how the game is played.</li>
+      <li>Diagnostics carried the argument: VIF for multicollinearity, PRESS for out-of-sample fit, standardized residuals to flag the Lakers (+2.09) as overperformers and the 76ers (−2.06) and Grizzlies (−2.17) as underperformers relative to their statistical profile.</li>
+    </ul>
+
+    <div class="actions">
+      <a class="btn" href="assets/nba-win-percentage-model.pdf">Read the full report (PDF)</a>
+    </div>
+  </div>
+
+  <!-- interactive chart -->
+  <div class="viz">
+    <div class="viz-head">
+      <div>
+        <div class="subhead" style="margin:0 0 6px">Actual vs. predicted Win% — 2024–25</div>
+        <div class="viz-note">Hover any team. Points outside the dashed band are where the model and reality disagree.</div>
+      </div>
+      <div class="legend">
+        <span><i class="sw fit"></i>Fits</span>
+        <span><i class="sw out"></i>|Std. resid| &gt; 2</span>
+      </div>
+    </div>
+    <svg id="scatter" viewBox="0 0 720 460" role="img" aria-label="Scatter plot of actual versus predicted win percentage for all thirty NBA teams in 2024-25."></svg>
+    <div class="readout" id="readout" aria-live="polite">
+      <span class="team">Hover a point</span>
+      <span class="detail">Thirty teams. Predicted from 3P%, PTS, DRB, AST, STL, TOV, DFG, DPTS, and salary-cap share.</span>
+    </div>
+  </div>
+
+  <!-- annotated decision -->
+  <div class="annot">
+    <div class="kicker" style="color:var(--mute)">One decision, shown</div>
+    <div class="annot-body">
+      <div class="annot-text">
+        <p>The first model I fit had eleven predictors and an adjusted R² of 95.05%. Two of them — total rebounds and turnovers forced — carried p-values above 0.14 and VIFs above 5, meaning they were both statistically idle and tangled up with predictors that weren't.</p>
+        <p>Dropping them <em>raised</em> adjusted R² to 95.33% while plain R² fell slightly. That's the trade working exactly as it should: the model lost a little in-sample fit and gained explanatory honesty. Miami's standardized residual fell from 2.13 to 1.90 and stopped being an outlier — not because the Heat changed, but because the model stopped straining to explain them with variables that had no business in it.</p>
+        <p class="aside">A higher R² is almost always available. It's rarely the thing worth having.</p>
+      </div>
+      <pre class="code"><span class="c"># drop TRB and TOV-forced: p &gt; 0.14, VIF &gt; 5</span>
+trimmed_predictors_trim &lt;- c(
+  <span class="s">"3P%"</span>,           <span class="c"># efficiency</span>
+  <span class="s">"PTS"</span>,           <span class="c"># scoring</span>
+  <span class="s">"DRB"</span>,           <span class="c"># keep DRB, drop TRB</span>
+  <span class="s">"AST"</span>, <span class="s">"STL"</span>,    <span class="c"># playmaking / defense</span>
+  <span class="s">"TOV"</span>,           <span class="c"># mistakes</span>
+  <span class="s">"DFG"</span>, <span class="s">"DPTS"</span>    <span class="c"># defensive stats</span>
+)
+
+mod_trim2 &lt;- <span class="f">lm</span>(trim_formula_trim,
+               data = nba_1516_z)
+
+<span class="c">#        R²      adj. R²    pred. R²</span>
+<span class="c"># before 96.76%   95.05%     91.00%</span>
+<span class="c"># after  96.62%   95.33%     92.16%</span></pre>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>SARIMAX forecast of industrial electricity demand</h3>
+      <div class="lang">PYTHON · STATSMODELS</div>
+      <p>Seasonal time-series model forecasting monthly consumption for manufacturing facilities. Exogenous variables surface the drivers behind demand rather than just extrapolating the curve — which is what turns a forecast into a cost-savings recommendation.</p>
+    </div>
+
+    <div class="card">
+      <h3>NRFI probability model</h3>
+      <div class="lang">PYTHON · JAVASCRIPT</div>
+      <p>A web tool estimating No Run First Inning probability from live MLB Stats API data. Logistic regression with gradient-descent recalibration, adjusted for platoon splits, park factors, umpire tendencies, and weather. Actively backtested against closing lines.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPERIENCE ================= -->
+<section id="experience">
+  <div class="shead">
+    <span class="tag">02 / Experience</span>
+    <div class="line"></div>
+    <h2>Where the work happens</h2>
+  </div>
+
+  <div class="job">
+    <div class="when">Aug 2025 — <span class="now">Present</span><br>Storrs, CT</div>
+    <div>
+      <h3>Research &amp; Data Analyst</h3>
+      <div class="org">SNE Industrial Assessment Center</div>
+      <ul>
+        <li>Quantitative analysis of large-scale industrial systems to identify efficiency improvements and cost-saving opportunities.</li>
+        <li>Analytical models in Python and Excel forecasting spend, annual financial impact, ROI, payback periods, and risk exposure.</li>
+        <li>Technical reports and financial summaries translating audit data into recommendations facility stakeholders can act on.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when">Aug 2026<br>Storrs, CT</div>
+    <div>
+      <h3>Sports Statistics Intern <span style="color:var(--resid);font-weight:400;font-size:12px;font-family:'IBM Plex Mono',monospace;">INCOMING</span></h3>
+      <div class="org">UConn Baseball</div>
+      <ul>
+        <li>Building statistical models in Python and R to support player development and team performance analysis.</li>
+        <li>Turning game and practice data into actionable insight for the coaching staff.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when">Jan 2026 — May 2026<br>West Hartford, CT</div>
+    <div>
+      <h3>Financial Services Intern</h3>
+      <div class="org">Apella Wealth</div>
+      <ul>
+        <li>Supported advisors on portfolio reviews, financial modeling, and client meeting preparation.</li>
+        <li>Researched equities, ETFs, and mutual funds; assisted with asset-allocation and rebalancing analysis.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when">Dec 2025 — Jan 2026<br>Killingly, CT</div>
+    <div>
+      <h3>Data Analytics &amp; Business Applications Intern</h3>
+      <div class="org">SPIROL International Corporation</div>
+      <ul>
+        <li>Cleaned, validated, and transformed business data in Python to improve reporting accuracy.</li>
+        <li>Queried and joined relational tables in SQL to reconcile and normalize operational datasets.</li>
+        <li>Merged data from separate databases into a single master database.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="job">
+    <div class="when">Nov 2025 — <span class="now">Present</span><br>University of Connecticut</div>
+    <div>
+      <h3>President, Alpha Delta Phi</h3>
+      <div class="org">Previously Recruitment Chair, May–Nov 2025</div>
+      <ul>
+        <li>Chapter operations, recruitment, budgeting, and long-term strategic planning for 100+ members.</li>
+        <li>Coordinate the executive board and oversee risk management and compliance procedures.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TOOLKIT ================= -->
+<section id="toolkit">
+  <div class="shead">
+    <span class="tag">03 / Toolkit</span>
+    <div class="line"></div>
+    <h2>What I work with</h2>
+  </div>
+
+  <div class="cols">
+    <div>
+      <div class="subhead">Languages &amp; Tools</div>
+      <div class="chips">
+        <span class="chip core">Python</span>
+        <span class="chip core">R</span>
+        <span class="chip core">SQL</span>
+        <span class="chip">Pandas</span>
+        <span class="chip">NumPy</span>
+        <span class="chip">Statsmodels</span>
+        <span class="chip">Matplotlib</span>
+        <span class="chip">tidyverse</span>
+        <span class="chip">Excel</span>
+        <span class="chip">LaTeX</span>
+        <span class="chip">Bloomberg (BQL)</span>
+      </div>
+
+      <div class="subhead" style="margin-top:38px">Methods</div>
+      <div class="chips">
+        <span class="chip">Regression &amp; diagnostics</span>
+        <span class="chip">Time series / SARIMAX</span>
+        <span class="chip">Econometrics</span>
+        <span class="chip">Financial modeling</span>
+        <span class="chip">Portfolio analysis</span>
+        <span class="chip">Optimization</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="subhead">Certifications</div>
+      <ul class="certs">
+        <li><span>Bloomberg Market Concepts</span><span class="issuer">Bloomberg · 2026</span></li>
+        <li><span>Bloomberg Finance Fundamentals</span><span class="issuer">Bloomberg · 2026</span></li>
+        <li><span>Bloomberg Spreadsheet Analysis</span><span class="issuer">Bloomberg · 2026</span></li>
+        <li><span>Google Data Analytics Professional</span><span class="issuer">Google · 2026</span></li>
+        <li><span>AI Fluency: Framework &amp; Foundations</span><span class="issuer">Anthropic · 2026</span></li>
+        <li><span>AI Capabilities and Limitations</span><span class="issuer">Anthropic · 2026</span></li>
+        <li><span>Securities Industry Essentials</span><span class="issuer">FINRA · Sitting Aug 2026</span></li>
+      </ul>
+
+      <div class="subhead" style="margin-top:38px">Coursework</div>
+      <div class="coursework">
+        Econometrics · Mathematical Statistics · Time Series Analysis · Probability · Optimization · Linear Algebra · International Finance · Financial Modeling · Data Science
+      </div>
+
+      <div class="subhead" style="margin-top:38px">Affiliations</div>
+      <div class="coursework">
+        UConn Finance Society · Analytics &amp; Information Management Society · UConn Club Baseball (former assistant coach)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WRITING ================= -->
+<section id="writing">
+  <div class="shead">
+    <span class="tag">04 / Writing</span>
+    <div class="line"></div>
+    <h2>Notes</h2>
+  </div>
+
+  <article class="essay">
+    <div class="essay-meta">On the 2024–25 NBA salary-cap model · July 2026</div>
+    <h3>Spending doesn't buy wins. Efficiency does.</h3>
+
+    <p class="lede">When I added share of salary cap used to a model that already knew how teams played, it stopped mattering. p = 0.384. That number is the whole argument.</p>
+
+    <p>The setup was simple. I had a regression predicting team win percentage from box-score statistics — three-point percentage, points, defensive rebounds, assists, steals, turnovers, opponent field goal percentage, opponent points. It worked well: adjusted R² of 95.48% on the 2024–25 season. Then I added one more predictor, the percentage of the salary cap a team had spent, and asked whether money explained anything the on-court numbers didn't.</p>
+
+    <p>It didn't. The F-statistic on salary cap share came back at 0.79, with a p-value of 0.384. Meanwhile three-point percentage posted an F of 286.45. Shooting, scoring, turnovers, and defense were all strongly tied to winning. The size of the payroll, once those were in the model, barely moved the needle.</p>
+
+    <p>The naive reading is that spending is irrelevant. That's wrong, and it's worth being careful here. Cap share doesn't predict wins <em>conditional on performance</em> — but performance is precisely what payroll is supposed to buy. The regression isn't telling us money doesn't matter. It's telling us money is not the mechanism. Spend and production are related, but the relationship is mediated entirely by whether the spending actually converts into shooting, defense, and ball security. When you control for the conversion, the spend has nothing left to say.</p>
+
+    <p>Which reframes the front-office question. Not <em>how much cap space should we use</em>, but <em>how many points of three-point percentage does this contract buy</em>. The model gives no credit for approaching the cap. It gives credit for what shows up in the box score. Two teams can spend identically and land two standard deviations apart in win percentage, and the regression will explain the gap without ever looking at their payrolls.</p>
+
+    <p>This is the <em>Moneyball</em> observation, arriving from a different direction. Beane's insight was that the market mispriced on-base percentage. The version here is narrower and less romantic: the market prices <em>players</em>, but wins are produced by <em>production</em>, and the gap between those two things is where the whole competitive advantage lives. Every dollar of that gap is a dollar of wins your opponent paid for and didn't get.</p>
+
+    <p>Two teams show what this looks like in practice. The Lakers' standardized residual was +2.09 — they won substantially more than their statistical profile predicted, which is either coaching, health, chemistry, or luck, and the model cannot tell you which. Philadelphia sat at −2.06 in the other direction. Neither residual has anything to do with what those franchises spent. Both are the model admitting there's something in a basketball season it doesn't have a column for.</p>
+
+    <p>That's the honest place to end. A regression with an adjusted R² of 95.45% explains almost everything and still cannot explain the Lakers. The residuals are where the interesting questions start, not where the analysis stops.</p>
+
+    <div class="essay-foot">
+      <a class="btn ghost" href="assets/nba-win-percentage-model.pdf">Full report, with diagnostics (PDF)</a>
+    </div>
+  </article>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="contact">
+  <div class="shead">
+    <span class="tag">05 / Contact</span>
+    <div class="line"></div>
+    <h2>Get in touch</h2>
+  </div>
+
+  <div class="contact">
+    <img class="portrait" src="data:image/jpeg;base64,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" alt="Carter Morissette" width="140" height="197">
+    <div class="contact-body">
+      <p>I'm a rising senior at UConn, currently doing energy-systems analysis at the SNE Industrial Assessment Center and heading into a sports statistics role with UConn Baseball this fall. I'm sitting for the SIE in August, and I'm drawn to roles that build toward the CFA.</p>
+      <p>If you're hiring for quantitative research, data science, or investment analysis — or you just want to argue about whether the Lakers' residual was luck — I'd like to hear from you.</p>
+      <div class="contact-links">
+        <a href="mailto:cartermorissette4@gmail.com">cartermorissette4@gmail.com</a>
+        <a href="tel:+18603828263">(860) 382-8263</a>
+        <a href="https://www.linkedin.com/in/carter-morissette" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="assets/Carter_Morissette_Resume.pdf">Résumé (PDF)</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="big">Open to roles in<br>quantitative research, data science, and investment analysis.</div>
+    <div class="links">
+      <a href="mailto:cartermorissette4@gmail.com">cartermorissette4@gmail.com</a>
+      <a href="https://www.linkedin.com/in/carter-morissette" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="tel:+18603828263">(860) 382-8263</a>
+      <a href="assets/Carter_Morissette_Resume.pdf">Résumé</a>
+    </div>
+    <div class="fine">Set in Newsreader, Inter, and IBM Plex Mono. Built by hand.</div>
+  </div>
+</footer>
+
+<script>
+// Interactive scatter: actual vs predicted Win%, 24-25 salary-cap model (Table 11).
+// [team, actual, predicted, std. residual]
+(function(){
+  var D=[
+    ["Oklahoma City Thunder",0.829,0.836,-0.60],["Cleveland Cavaliers",0.780,0.760,0.47],
+    ["Boston Celtics",0.744,0.752,-0.16],["Houston Rockets",0.634,0.617,0.85],
+    ["New York Knicks",0.622,0.620,0.13],["Denver Nuggets",0.610,0.616,-0.10],
+    ["Indiana Pacers",0.610,0.567,1.18],["Los Angeles Lakers",0.610,0.541,2.09],
+    ["Los Angeles Clippers",0.610,0.593,0.60],["Minnesota Timberwolves",0.598,0.632,-0.79],
+    ["Memphis Grizzlies",0.585,0.638,-2.17],["Milwaukee Bucks",0.585,0.569,0.48],
+    ["Golden State Warriors",0.585,0.582,0.16],["Detroit Pistons",0.537,0.534,-0.49],
+    ["Orlando Magic",0.500,0.486,0.62],["Atlanta Hawks",0.488,0.461,1.29],
+    ["Sacramento Kings",0.488,0.522,-1.13],["Chicago Bulls",0.476,0.462,0.53],
+    ["Dallas Mavericks",0.476,0.478,-0.07],["Miami Heat",0.451,0.504,-1.91],
+    ["Phoenix Suns",0.439,0.441,0.27],["Portland Trail Blazers",0.439,0.417,0.84],
+    ["San Antonio Spurs",0.415,0.429,-0.65],["Toronto Raptors",0.366,0.392,-0.88],
+    ["Brooklyn Nets",0.317,0.304,0.30],["Philadelphia 76ers",0.293,0.341,-2.06],
+    ["New Orleans Pelicans",0.256,0.245,0.35],["Charlotte Hornets",0.232,0.252,-0.74],
+    ["Washington Wizards",0.220,0.186,1.55],["Utah Jazz",0.207,0.224,-1.23]
+  ];
+  var svg=document.getElementById('scatter');
+  if(!svg) return;
+  var ns='http://www.w3.org/2000/svg';
+  var L=64,R=20,T=18,B=52, W=720, H=460;
+  var lo=0.15, hi=0.88;
+  function X(v){return L+(v-lo)/(hi-lo)*(W-L-R);}
+  function Y(v){return H-B-(v-lo)/(hi-lo)*(H-T-B);}
+  function el(t,a){var e=document.createElementNS(ns,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  // grid + axis ticks
+  [0.2,0.3,0.4,0.5,0.6,0.7,0.8].forEach(function(t){
+    svg.appendChild(el('line',{x1:X(t),y1:T,x2:X(t),y2:H-B,stroke:'#efece6','stroke-width':1}));
+    svg.appendChild(el('line',{x1:L,y1:Y(t),x2:W-R,y2:Y(t),stroke:'#efece6','stroke-width':1}));
+    var xt=el('text',{x:X(t),y:H-B+20,'text-anchor':'middle',fill:'#6d7480',
+      'font-family':'IBM Plex Mono,monospace','font-size':'11'});
+    xt.textContent=t.toFixed(1); svg.appendChild(xt);
+    var yt=el('text',{x:L-12,y:Y(t)+4,'text-anchor':'end',fill:'#6d7480',
+      'font-family':'IBM Plex Mono,monospace','font-size':'11'});
+    yt.textContent=t.toFixed(1); svg.appendChild(yt);
+  });
+
+  // 45-degree perfect-prediction line
+  svg.appendChild(el('line',{x1:X(lo),y1:Y(lo),x2:X(hi),y2:Y(hi),
+    stroke:'#b9b3a8','stroke-width':1,'stroke-dasharray':'5 5'}));
+
+  // axis labels
+  var xl=el('text',{x:(L+W-R)/2,y:H-8,'text-anchor':'middle',fill:'#6d7480',
+    'font-family':'IBM Plex Mono,monospace','font-size':'11','letter-spacing':'0.08em'});
+  xl.textContent='ACTUAL WIN%'; svg.appendChild(xl);
+  var yl=el('text',{x:16,y:(T+H-B)/2,'text-anchor':'middle',fill:'#6d7480',
+    'font-family':'IBM Plex Mono,monospace','font-size':'11','letter-spacing':'0.08em',
+    transform:'rotate(-90 16 '+((T+H-B)/2)+')'});
+  yl.textContent='PREDICTED WIN%'; svg.appendChild(yl);
+
+  var out=document.getElementById('readout');
+  var teamEl=out.querySelector('.team'), detEl=out.querySelector('.detail');
+  var dflt=[teamEl.textContent, detEl.textContent];
+
+  D.forEach(function(d){
+    var name=d[0],a=d[1],p=d[2],sr=d[3];
+    var isOut=Math.abs(sr)>2;
+    var c=el('circle',{cx:X(a),cy:Y(p),r:5.2,
+      fill:isOut?'#a8442e':'#fff',stroke:isOut?'#a8442e':'#1b3a5c','stroke-width':1.6,
+      tabindex:'0',role:'img'});
+    var delta=(p-a);
+    var verdict = delta<0 ? 'won more than the model predicts' : 'won less than the model predicts';
+    c.appendChild(el('title',{})).textContent=name;
+    function show(){
+      c.setAttribute('r',7.6);
+      teamEl.textContent=name;
+      detEl.textContent='Actual '+a.toFixed(3)+' · Predicted '+p.toFixed(3)+
+        ' · Std. residual '+(sr>0?'+':'')+sr.toFixed(2)+
+        (isOut ? ' — outlier, '+verdict : '');
+    }
+    function hide(){
+      c.setAttribute('r',5.2);
+      teamEl.textContent=dflt[0]; detEl.textContent=dflt[1];
+    }
+    c.addEventListener('mouseenter',show); c.addEventListener('mouseleave',hide);
+    c.addEventListener('focus',show); c.addEventListener('blur',hide);
+    svg.appendChild(c);
+  });
+})();
+
+// Residual strip: standardized residuals from the 24-25 salary-cap model.
+(function(){
+  var r = [0.47,-2.17,-0.10,-0.60,1.29,0.53,1.18,-0.16,0.13,-1.13,
+           0.48,-0.49,-0.79,0.85,-0.07,-0.65,0.16,0.27,2.09,0.60,
+           -1.23,-0.88,0.84,-1.91,0.35,-2.06,1.55,0.62,-0.74,0.30];
+  var g = document.getElementById('pts');
+  if(!g) return;
+  var ns='http://www.w3.org/2000/svg';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  r.forEach(function(v,i){
+    var c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx', 22 + i*(856/29));
+    c.setAttribute('cy', 55 - v*20);
+    c.setAttribute('r', 3.4);
+    var out = Math.abs(v) > 2;
+    c.setAttribute('fill', out ? '#a8442e' : 'none');
+    c.setAttribute('stroke', out ? '#a8442e' : '#1b3a5c');
+    c.setAttribute('stroke-width','1.4');
+    c.setAttribute('class','dot');
+    if(!reduce) c.style.animationDelay=(i*26)+'ms';
+    g.appendChild(c);
+  });
+})();
+</script>
+
+</body>
+</html>
